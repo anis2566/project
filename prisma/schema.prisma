@@ -1,0 +1,282 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(uuid())
+  clerkId String @unique
+  name String
+  email String
+  imageUrl String
+  role String @default("user")
+
+  seller Seller?
+  address Address[]
+  orders Order[]
+  reviews Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Seller {
+  id String @id @default(uuid())
+  name String
+  email String
+  imageUrl String
+  phone String
+  address String
+
+  paymentNumber String
+  accountType String
+  status String @default("pending")
+
+  userId String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  orders SellerOrder[]
+  bank Bank?
+  withdraws Withdraw[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Bank {
+  id String @id @default(uuid())
+  current Int
+  pending Int
+  withdraw Int
+  total Int
+
+  sellerId String @unique
+  seller Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Withdraw {
+  id String @id @default(uuid())
+  amount Int
+  method String
+  number String
+  status String @default("pending")
+
+  sellerId String
+  seller Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Brand {
+  id String @id @default(uuid())
+  name String @unique
+  imageUrl String
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id String @id @default(uuid())
+  name String
+  description String? @db.Text
+  imageUrl String
+  tags String[] @default([])
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id String @id @default(uuid())
+  name  String
+  description String @db.Text
+  featureImageUrl String
+  images  String[] @default([])
+  totalStock  Int?
+  price Int
+  discountPrice Int?
+  sellerPrice Int?
+  status  String @default("DRAFT")
+
+  featureTitle String?
+  startDeal DateTime?
+  endDeal DateTime?
+  averageRating    Float      @default(0.0)
+  ratingCount      Int        @default(0)
+  
+  genre String[]
+  colors String[] @default([])
+  reviews Review[]
+
+  categoryId String
+  category  Category @relation(fields: [categoryId], references: [id])
+
+  brandId String
+  brand  Brand @relation(fields: [brandId], references: [id])
+
+  stocks  Stock[]
+  sellerOrderProducts SellerOrderProduct[]
+  orderProducts OrderProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Stock {
+  id String @id @default(uuid())
+  stock Int
+  size  String
+  color String?
+
+  productId String
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Coupon {
+  id String @id @default(uuid())
+  name String
+  code String
+  imageUrl String?
+  value Int
+  startDate DateTime
+  expiryDate DateTime
+  status String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model SellerOrder {
+  id String @id @default(uuid())
+  invoiceId String 
+  customerName String
+  address String @db.Text
+  mobile String
+  total Int
+  deliveryFee Int
+  status String @default("pending")
+  trackingId String?
+
+  sellerId String
+  seller Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  products SellerOrderProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SellerOrderProduct {
+  id String @id @default(uuid())
+  price Int
+  sellPrice Int
+  quantity Int
+  size String?
+  color String?
+
+  productId String 
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  orderId String // Foreign key to Order
+  order SellerOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Address {
+  id String @id @default(uuid())
+  title String?
+  recepient String
+  division String
+  address String
+  phone String
+
+  userId String?
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Order {
+  id String @id @default(uuid())
+  invoiceId String
+  total Int
+  deliveryFee Int
+  status String @default("pending")
+  paymentMethod String
+  paymentStatus String? 
+  trackingId String?
+  
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  products OrderProduct[]
+
+  addressId String?
+  address   Address? @relation(fields: [addressId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model OrderProduct {
+  id String @id @default(uuid())
+  price Int
+  quantity Int
+  size String?
+  color String?  
+
+  orderId String
+  order Order @relation(fields: [orderId], references: [id])
+
+  productId String
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id String @id @default(uuid())
+  content String
+  rating Int
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productId String
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
