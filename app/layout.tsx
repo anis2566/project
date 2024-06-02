@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 import AuthProvider from "@/providers/auth-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { AppKnockProviders } from "@/providers/knock-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
+import { QueryProvider } from "@/providers/query-provider";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -31,9 +33,17 @@ export default function RootLayout({
             fontSans.variable
           )}
         >
-          <AppKnockProviders>
-            {children}
-          </AppKnockProviders>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            disableTransitionOnChange
+          >
+            <QueryProvider>
+              <AppKnockProviders>
+                {children}
+              </AppKnockProviders>
+            </QueryProvider>
+          </ThemeProvider>
         </body>
       </html>
     </AuthProvider>

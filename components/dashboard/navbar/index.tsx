@@ -4,9 +4,9 @@ import { ClerkLoaded, ClerkLoading, UserButton } from "@clerk/nextjs"
 
 import { Input } from "@/components/ui/input"
 
-// import { ModeToggle } from "@/components/mode-toggle"
+import { ModeToggle } from "@/components/mode-toggle"
 import { NavbarDrawer } from "@/components/dashboard/navbar/drawer"
-// import { Notification } from "@/components/dashboard/notification"
+import { Notification } from "@/components/dashboard/notification"
 
 
 export const Navbar = () => {
@@ -26,8 +26,8 @@ export const Navbar = () => {
             </form>
             </div>
             <div className="flex items-center gap-x-2">
-              {/* <ModeToggle />
-              <Notification /> */}
+              <ModeToggle />
+              <Notification />
               <ClerkLoading>
                 <Loader2 className="w-5 h-5 animate-spin" />
               </ClerkLoading>
